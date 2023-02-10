@@ -1,50 +1,27 @@
-#!/usr/bin/env groovy
+pipeline {
 
-node {
-    withEnv(["LT_USERNAME=Your LambdaTest UserName",
-    "LT_ACCESS_KEY=Your LambdaTest Access Key",
-    "LT_TUNNEL=true"]){
+  agent any
 
-    echo env.LT_USERNAME
-    echo env.LT_ACCESS_KEY 
-    
-   stage('setup') { 
-   
-      // Get some code from a GitHub repository
-    try{
-      git 'https://github.com/ltamit/playwright-sample'
+  stages {
+    stage('Build') {
+      steps {
+        // One or more steps need to be included within the steps block.
+        sh 'git clone git@github.com:ltamit/playwright-sample.git'
+        sh 'export LT_USERNAME=${LT_USERNAME}'
+        sh 'export LT_ACCESS_KEY=${LT_ACCESS_KEY}'
+        sh 'npm install'
+      }
 
-      //Download Tunnel Binary
-      //sh "wget http://downloads.lambdatest.com/tunnel/linux/64bit/LT_Linux.zip"
-
-      //Required if unzip is not installed
-      //sh 'sudo apt-get install --no-act unzip'
-      //sh 'unzip -o LT_Linux.zip'
-
-      //Starting Tunnel Process 
-      //sh "./LT -user ${env.LT_USERNAME} -key ${env.LT_ACCESS_KEY} &"
-      //sh  "rm -rf LT_Linux.zip"
     }
-    catch (err){
-      echo err
-   }
-    
-   }
-   stage('build') {
-      // Installing Dependencies
-      sh 'npm install'
+
+    stage('Test') {
+      steps {
+        // One or more steps need to be included within the steps block.
+
+        sh 'node playwright-single.js'
+
+      }
     }
-   
-   stage('test') {
-          try{
-          sh 'node playwright-single.js'
-          }
-          catch (err){
-          echo err
-          }  
-   }
-   stage('end') {  
-     echo "Success" 
-     }
- }
+
+  }
 }
